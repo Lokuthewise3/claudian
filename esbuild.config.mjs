@@ -102,9 +102,10 @@ const patchSdkImportMeta = {
 };
 
 // The Claude SDK `/core` entry imports its zod and MCP peers only for
-// `createSdkMcpServer()`, which Claudian does not use. Marking those
-// SDK-issued imports side-effect-free lets esbuild drop them when unused
-// instead of evaluating their module graphs for their top-level effects.
+// `createSdkMcpServer()`, which only the lazily loaded vault tools use.
+// Marking those SDK-issued imports side-effect-free lets esbuild drop them
+// when unused instead of evaluating their module graphs for their top-level
+// effects, and keeps them out of plugin startup.
 const omitUnusedClaudeSdkPeers = {
   name: 'omit-unused-claude-sdk-peers',
   setup(build) {

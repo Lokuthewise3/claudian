@@ -44,6 +44,7 @@ import {
   isEffortLevel,
   resolveSupportedEffortLevel,
 } from '../types/models';
+import { VAULT_TOOLS_SERVER_NAME } from '../vaultTools/constants';
 
 const EXPLICIT_PROTOCOL_INSTRUCTIONS = [
   'Honor the host tool policy and every permission decision.',
@@ -120,6 +121,10 @@ export class ClaudeExecutionRequestEncoder {
     );
     const prompt = this.#encodePrompt(request, replayConversationHistory);
     const policy = resolveToolPolicy(request);
+    // Restricted policies (title generation, inline edit, read-only runs) get no vault tools.
+    const vaultTools = policy.allowedTools === null
+      ? (await import('../vaultTools/createVaultToolsServer')).createVaultToolsServer(this.deps.host.app)
+      : null;
     const systemPrompt = request.configuration.systemInstructions.kind === 'explicit'
       ? [
         request.configuration.systemInstructions.instructions.trim(),
@@ -180,6 +185,10 @@ export class ClaudeExecutionRequestEncoder {
         ...DISABLED_BUILTIN_SUBAGENTS,
       ],
       ...(policy.tools !== undefined ? { tools: policy.tools } : {}),
+      ...(vaultTools ? {
+        mcpServers: { [VAULT_TOOLS_SERVER_NAME]: vaultTools.config },
+        allowedTools: vaultTools.allowedTools,
+      } : {}),
       ...(policy.hooks ? { hooks: policy.hooks } : {}),
       ...(resume.sessionId ? { resume: resume.sessionId } : {}),
       ...(resume.resumeAt ? { resumeSessionAt: resume.resumeAt } : {}),
@@ -212,6 +221,7 @@ export class ClaudeExecutionRequestEncoder {
         systemPrompt,
         tools: policy.tools,
         hooks: Boolean(policy.hooks),
+        vaultTools: vaultTools?.allowedTools ?? null,
         cliPath,
         settingSources: options.settingSources,
         additionalDirectories: options.additionalDirectories,
