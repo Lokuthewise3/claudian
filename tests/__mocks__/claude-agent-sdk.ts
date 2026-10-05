@@ -145,20 +145,6 @@ let lastResponse: (AsyncGenerator<any> & {
 
 let queryCallCount = 0;
 
-// In-process MCP helpers: keep the definitions inspectable so tests can invoke a tool handler.
-export function tool(
-  name: string,
-  description: string,
-  inputSchema: unknown,
-  handler: (args: any, extra: unknown) => Promise<unknown>,
-) {
-  return { name, description, inputSchema, handler };
-}
-
-export function createSdkMcpServer(options: { name: string; tools?: unknown[] }) {
-  return { type: 'sdk' as const, name: options.name, instance: { tools: options.tools ?? [] } };
-}
-
 // Allow tests to set custom mock messages
 export function setMockMessages(messages: any[], options?: { appendResult?: boolean }) {
   customMockMessages = messages;
