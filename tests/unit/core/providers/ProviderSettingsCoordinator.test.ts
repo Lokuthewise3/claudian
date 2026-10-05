@@ -691,14 +691,14 @@ describe('ProviderSettingsCoordinator', () => {
     it.each([
       ['codex', 'normal'], ['codex', 'auto-review'], ['codex', 'yolo'],
       ['grok', 'normal'], ['grok', 'acceptEdits'], ['grok', 'yolo'],
-    ])('defaults a new Claude selection to Auto without inheriting %s %s', (settingsProvider, permissionMode) => {
+    ])('defaults a new Claude selection to Manual without inheriting %s %s', (settingsProvider, permissionMode) => {
       const settings = {
         settingsProvider,
         permissionMode,
         providerConfigs: { [settingsProvider]: { enabled: true } },
       };
       expect(ProviderSettingsCoordinator.getProviderSettingsSnapshot(settings, 'claude').permissionMode)
-        .toBe('auto');
+        .toBe('manual');
       expect(settings.permissionMode).toBe(permissionMode);
     });
 

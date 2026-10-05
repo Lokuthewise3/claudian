@@ -13,7 +13,7 @@ export function createDefaultClaudianSettings(providerConfigs: ProviderConfigMap
 export const DEFAULT_CLAUDIAN_SETTINGS: ClaudianSettings = {
   userName: '',
 
-  permissionMode: 'auto',
+  permissionMode: 'manual',
 
   model: 'haiku',
   effortLevel: DEFAULT_REASONING_VALUE,

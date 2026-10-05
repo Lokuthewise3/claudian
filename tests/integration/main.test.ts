@@ -447,8 +447,8 @@ describe('ClaudianPlugin', () => {
       await plugin.onload();
 
       expect(plugin.settings).toBeDefined();
-      // A fresh install starts Claude on Auto, which carries to an unsaved provider as Safe.
-      expect(plugin.settings.permissionMode).toBe('auto');
+      // This fork starts a fresh install on Manual (ask before every change); other providers keep their own defaults.
+      expect(plugin.settings.permissionMode).toBe('manual');
       expect(ProviderSettingsCoordinator.getProviderSettingsSnapshot(plugin.settings, 'codex').permissionMode)
         .toBe('auto-review');
       expect(plugin.settings.hiddenCommands).toEqual(DEFAULT_SETTINGS.hiddenCommands);
