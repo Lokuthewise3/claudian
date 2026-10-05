@@ -89,6 +89,7 @@ function renderToolbar(fixture: FixtureOptions = {}) {
     onEffortLevelChange: jest.fn(async (effort: string) => { settings.reasoning = effort; }),
     onServiceTierChange: jest.fn(async (tier: string) => { settings.serviceTier = tier; }),
     onPermissionModeChange: jest.fn(async (mode: string) => { settings.permissionMode = mode; }),
+    confirmApprovalBypass: jest.fn(async () => true),
     getSettings: () => settings,
     getEnvironmentVariables: () => 'ANTHROPIC_MODEL=opus',
     getUIConfig: () => uiConfig,
@@ -556,6 +557,50 @@ describe('permission button', () => {
       expect(ui.getByRole('button', { name: `Permission mode: ${name}` })).toBe(button);
       expect(button.classList.contains('claudian-toolbar-chip--alert')).toBe(alert);
     }
+  });
+
+  it('asks for confirmation before switching to a mode that skips approvals and keeps the mode when declined', async () => {
+    const { callbacks, ui } = renderToolbar({
+      settings: { permissionMode: 'manual' },
+      permissionModes: claudeChatUIConfig.getPermissionModeOptions?.() ?? undefined,
+    });
+    const button = ui.getByRole('button', { name: 'Permission mode: Manual' });
+    jest.mocked(callbacks.confirmApprovalBypass).mockResolvedValueOnce(false);
+
+    fireEvent.click(button);
+    fireEvent.click(ui.getByRole('menuitemradio', { name: /^YOLO/ }));
+    await flush();
+
+    expect(callbacks.confirmApprovalBypass).toHaveBeenCalledTimes(1);
+    expect(callbacks.confirmApprovalBypass).toHaveBeenCalledWith(expect.objectContaining({ value: 'yolo', label: 'YOLO' }));
+    expect(callbacks.onPermissionModeChange).not.toHaveBeenCalled();
+    expect(ui.getByRole('button', { name: 'Permission mode: Manual' })).toBe(button);
+    expect(button.classList.contains('claudian-toolbar-chip--alert')).toBe(false);
+
+    fireEvent.click(button);
+    fireEvent.click(ui.getByRole('menuitemradio', { name: /^YOLO/ }));
+    await flush();
+
+    expect(callbacks.confirmApprovalBypass).toHaveBeenCalledTimes(2);
+    expect(callbacks.onPermissionModeChange).toHaveBeenCalledWith('yolo');
+    expect(ui.getByRole('button', { name: 'Permission mode: YOLO' })).toBe(button);
+  });
+
+  it('does not ask for confirmation when choosing a mode that keeps approvals', async () => {
+    const { callbacks, ui } = renderToolbar({
+      settings: { permissionMode: 'yolo' },
+      permissionModes: claudeChatUIConfig.getPermissionModeOptions?.() ?? undefined,
+    });
+    const button = ui.getByRole('button', { name: 'Permission mode: YOLO' });
+
+    for (const value of ['manual', 'acceptEdits', 'auto']) {
+      fireEvent.click(button);
+      const name = { manual: /^Manual/, acceptEdits: /^Accept edits/, auto: /^Auto/ }[value]!;
+      fireEvent.click(ui.getByRole('menuitemradio', { name }));
+      await flush();
+      expect(callbacks.onPermissionModeChange).toHaveBeenLastCalledWith(value);
+    }
+    expect(callbacks.confirmApprovalBypass).not.toHaveBeenCalled();
   });
 
   it('is absent when the provider has no permission toggle', () => {

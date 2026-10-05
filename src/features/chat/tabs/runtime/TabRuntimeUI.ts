@@ -42,6 +42,7 @@ import type {
   TabServices,
   TabUIComponents,
 } from '@/features/chat/tabs/types';
+import { confirm } from '@/shared/modals/ConfirmModal';
 
 function buildContextManagers(
   options: TabRuntimeConstructionContext,
@@ -355,6 +356,11 @@ function buildInputToolbar(
       await updateTabServiceTier(tab, plugin, serviceTier);
       onUserModified();
     },
+    confirmApprovalBypass: (option) => confirm(
+      plugin.app,
+      `${option.label} lets the agent run every action without asking for approval, including file edits and shell commands. Switch anyway?`,
+      `Switch to ${option.label}`,
+    ),
     onPermissionModeChange: async (mode: string) => {
       if (applySideSetting({ permissionMode: mode })) return;
       const tab = runtimeRef.requirePublished();

@@ -66,6 +66,10 @@ export class PermissionToggle {
         onSelect: () => {
           if (choice.value === this.callbacks.getSettings().permissionMode) return;
           runToolbarAction(async () => {
+            if (choice.bypassesApprovals && !(await this.callbacks.confirmApprovalBypass(choice))) {
+              this.updateDisplay();
+              return;
+            }
             await this.callbacks.onPermissionModeChange(choice.value);
             this.updateDisplay();
           }, 'Failed to change permission mode');

@@ -28,10 +28,15 @@ import type { AssembledTabRuntime } from '@/features/chat/tabs/types';
 import { getCodexProviderSettings, updateCodexProviderSettings } from '@/providers/codex/settings';
 import { updateCurrentGrokCatalog } from '@/providers/grok/settings';
 import { VaultMentionDataProvider } from '@/shared/mention/VaultMentionDataProvider';
+import { confirm } from '@/shared/modals/ConfirmModal';
+
+// The Obsidian Modal stub renders nothing; the dialog itself is covered by the toolbar DOM tests.
+jest.mock('@/shared/modals/ConfirmModal', () => ({ confirm: jest.fn() }));
 
 const originalResizeObserver = globalThis.ResizeObserver;
 const originalStructuredClone = globalThis.structuredClone;
 beforeEach(() => {
+  jest.mocked(confirm).mockReset().mockResolvedValue(true);
   globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
   globalThis.structuredClone = value => deserialize(serialize(value));
 });
@@ -235,6 +240,8 @@ it('defaults Codex to automatic review and persists and submits each permission 
       await expectSubmission(tab, sessions, getChatSettingsSnapshot(settings, entry.id, entry.selected).model, 'high');
       expect(sessions.at(-1)?.requests.at(-1)?.configuration.permissionMode).toBe(mode);
     }
+    // Only the mode that skips approvals asks first, and its confirm button names that mode.
+    expect(jest.mocked(confirm).mock.calls.map(([, , confirmText]) => confirmText)).toEqual(['Switch to Full access']);
     const reopened = await createTab();
     expect(within(reopened.dom.inputComposerEl).getByRole('button', { name: 'Permission mode: Approve for me' })).toBeDefined();
     expect(settings.permissionMode).toBe(initialPermissionMode);

@@ -1,4 +1,8 @@
-import type { ProviderCapabilities, ProviderChatUIConfig } from '@/core/providers/types';
+import type {
+  ProviderCapabilities,
+  ProviderChatUIConfig,
+  ProviderPermissionModeOption,
+} from '@/core/providers/types';
 import type { ChatSettings } from '@/features/chat/ChatSettings';
 
 export type ToolbarSettings = ChatSettings & Record<string, unknown>;
@@ -9,6 +13,8 @@ export interface ToolbarCallbacks {
   onEffortLevelChange: (effort: string) => Promise<void>;
   onServiceTierChange: (serviceTier: string) => Promise<void>;
   onPermissionModeChange: (mode: string) => Promise<void>;
+  /** Resolves true when the user accepts switching to a mode that skips approvals. */
+  confirmApprovalBypass: (option: ProviderPermissionModeOption) => Promise<boolean>;
   getSettings: () => ToolbarSettings;
   getEnvironmentVariables?: () => string;
   getUIConfig: () => ProviderChatUIConfig;
