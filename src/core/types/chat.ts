@@ -10,7 +10,8 @@ export interface ForkSource {
 }
 
 /** View type identifier for Obsidian. */
-export const VIEW_TYPE_CLAUDIAN = 'claudian-view';
+// Fork-specific id: Obsidian rejects a second registration of the stock plugin's 'claudian-view'.
+export const VIEW_TYPE_CLAUDIAN = 'claudian-lucas-view';
 
 /** Supported image media types for attachments. */
 export type ImageMediaType = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';

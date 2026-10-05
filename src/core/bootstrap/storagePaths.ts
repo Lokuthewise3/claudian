@@ -1,6 +1,7 @@
 import { type InstallationKey, isInstallationKey } from '@/core/device/InstallationKey';
 
-export const CLAUDIAN_STORAGE_PATH = '.claudian';
+// Fork-specific folder so this build never reads or writes the stock plugin's `.claudian/` data.
+export const CLAUDIAN_STORAGE_PATH = '.claudian-lucas';
 
 export const CLAUDIAN_SETTINGS_PATH = `${CLAUDIAN_STORAGE_PATH}/claudian-settings.json`;
 
